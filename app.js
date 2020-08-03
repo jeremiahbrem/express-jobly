@@ -8,8 +8,10 @@ const morgan = require("morgan");
 
 const app = express();
 const companyRoutes = require("./api/companyRoutes.js")
+const jobRoutes = require("./api/jobRoutes.js")
 app.use(express.json());
 app.use("/companies", companyRoutes);
+app.use("/jobs", jobRoutes);
 
 // add logging system
 app.use(morgan("tiny"));

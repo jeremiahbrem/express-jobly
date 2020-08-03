@@ -4,9 +4,10 @@ const request = require("supertest");
 const app = require("../../app.js");
 const Company = require("../../models/company.js");
 
-const { TEST_DATA, beforeEachCallback } = require("../unit/jest.config.js");
+const { TEST_DATA, beforeEachCallback } = require("../jest.config.js");
 const db = require("../../db");
 
+// test company properties
 let name;
 let handle;
 let num_employees;

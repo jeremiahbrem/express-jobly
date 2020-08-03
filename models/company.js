@@ -17,7 +17,7 @@ class Company {
   /* queries the database for all company objects that meet the given arguments criteria,
    * returns all companies if no arguments given 
    * searchQuery - WHERE statement filters company name by search term
-   * empQuery - WHERE statement filters by company by number of employees
+   * empQuery - WHERE statement filters companies by number of employees
    * queryStart - begins query statement with WHERE or AND if multiple WHERE statements
    */
   static async getCompanies(params) {
@@ -36,12 +36,15 @@ class Company {
 
     if (params.min_employees && params.max_employees) {
       empQuery = `${queryStart} num_employees BETWEEN ${params.min_employees} AND ${params.max_employees}`;
+      queryStart = 'AND';
     }
     else if (params.min_employees) {
       empQuery = `${queryStart} num_employees > ${params.min_employees}`;
+      queryStart = 'AND';
     }
     else if (params.max_employees) {
       empQuery = `${queryStart} num_employees < ${params.max_employees}`;
+      queryStart = 'AND'
     }
 
     const result = await db.query(

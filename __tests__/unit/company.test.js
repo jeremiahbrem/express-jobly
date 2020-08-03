@@ -3,7 +3,7 @@ process.env.NODE_ENV === "test";
 const app = require("../../app");
 const Company = require("../../models/company.js");
 
-const { TEST_DATA, beforeEachCallback } = require("./jest.config");
+const { TEST_DATA, beforeEachCallback } = require("../jest.config");
 const db = require("../../db");
 
 // test company properties
@@ -27,6 +27,11 @@ beforeEach(async function() {
 })
 
 describe("Testing Company class functions", () => {
+  test("Testing getCompanies all", async function() {
+    const result = await Company.getCompanies({});
+    expect(result).toEqual([{handle, name}]);
+  })
+  
   test("Testing getCompanies search", async function() {
     const result = await Company.getCompanies({search: name});
     expect(result).toEqual([{handle, name}]);

@@ -1,8 +1,8 @@
 process.env.NODE_ENV === "test";
 
-const app = require("../../app");
-const db = require("../../db");
-const Company = require("../../models/company.js");
+const app = require("../app");
+const db = require("../db");
+const Company = require("../models/company.js");
 
 // object for holding test data values to use in tests
 const TEST_DATA = {}
@@ -10,7 +10,9 @@ const TEST_DATA = {}
 // called before each test
 async function beforeEachCallback() {
   await db.query('DELETE FROM companies');
+  await db.query('DELETE FROM jobs');
   await createTestCompanyData();
+  await createTestJobData();
 }
 
 // creates test company and adds to TEST_DATA
@@ -26,6 +28,20 @@ async function createTestCompanyData() {
      RETURNING handle, name, num_employees, description, logo_url`
   )
   TEST_DATA['company'] = result.rows[0];
+}
+
+async function createTestJobData() {
+  const result = await db.query(
+    `INSERT INTO jobs (title, salary, equity, company_handle)
+    VALUES (
+      'Software Developer',
+      100000.00,
+      0.00,
+      'springboard'
+    )
+    RETURNING *`
+  )
+  TEST_DATA['job'] = result.rows[0];
 }
 
 module.exports = { TEST_DATA, beforeEachCallback };
