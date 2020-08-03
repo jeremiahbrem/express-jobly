@@ -22,8 +22,18 @@ router.get("/", async function (req, res, next) {
 router.get("/:handle", async function (req, res, next) {
   try {
     const handle = req.params.handle;
-    const response = await Company.getCompany(handle);
-    return res.json({company: response});
+    const getComp = await Company.getCompany(handle);
+    const jobs = await getComp.getJobs();
+    return res.json({
+      company: { 
+        handle: getComp.handle,
+        name: getComp.name,
+        description: getComp.description,
+        num_employees: getComp.num_employees,
+        logo_url: getComp.logo_url,
+        jobs: jobs
+      }  
+    });
   } catch(err) {
     return next(err);
   }

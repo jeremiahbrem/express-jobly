@@ -136,120 +136,152 @@ describe("Testing job route functions", () => {
     expect(response.statusCode).toEqual(404);  
   })
   
-//   test("POST /companies all columns", async function() {
-//     const response = await request(app)
-//       .post(`/companies`)
-//       .send({
-//         handle: 'test',
-//         name: 'Test',
-//         description: 'Test company',
-//         num_employees: 100,
-//         logo_url: 'http://example.com/logo.jpg'
-//       });
-//     expect(response.statusCode).toEqual(201);
-//     expect(response.body).toEqual({
-//       company: {
-//         handle: 'test', 
-//         name: 'Test',
-//         description: 'Test company',
-//         num_employees: 100,
-//         logo_url: 'http://example.com/logo.jpg'
-//       }
-//     });  
-//   })
+  test("POST /jobs", async function() {
+    const response = await request(app)
+      .post(`/jobs`)
+      .send({
+        title: 'Test job',
+        salary: 200000,
+        equity: 0.05,
+        company_handle: 'springboard'
+      });
+    expect(response.statusCode).toEqual(201);
+    expect(response.body).toEqual({
+      job: {
+        id: expect.any(Number), 
+        title: 'Test job',
+        salary: 200000,
+        equity: 0.05,
+        company_handle: 'springboard',
+        date_posted: expect.any(String)
+      }
+    });  
+  })
   
-//   test("POST /companies only required columns", async function() {
-//     const response = await request(app)
-//       .post(`/companies`)
-//       .send({
-//         handle: 'test',
-//         name: 'Test',
-//       });
-//     expect(response.statusCode).toEqual(201);
-//     expect(response.body).toEqual({
-//       company: {
-//         handle: 'test', 
-//         name: 'Test',
-//         description: null,
-//         num_employees: null,
-//         logo_url: null
-//       }
-//     });  
-//   })
+  test("POST /jobs invalid title", async function() {
+    const response = await request(app)
+      .post(`/jobs`)
+      .send({
+        title: 1234,
+        salary: 200000,
+        equity: 0.05,
+        company_handle: 'springboard'
+      });
+    expect(response.statusCode).toEqual(400);
+  })
   
-//   test("POST /companies invalid inputs", async function() {
-//     const response = await request(app)
-//       .post(`/companies`)
-//       .send({
-//         handle: 1234,
-//         name: 'Test',
-//         logo_url: 'badurl'
-//       });
-//     expect(response.statusCode).toEqual(400);
-//   })
+  test("POST /jobs invalid salary", async function() {
+    const response = await request(app)
+      .post(`/jobs`)
+      .send({
+        title: 'Test job',
+        salary: 'chedduh',
+        equity: 0.05,
+        company_handle: 'springboard'
+      });
+    expect(response.statusCode).toEqual(400);
+  })
   
-//   test("POST /companies empty inputs", async function() {
-//     const response = await request(app)
-//       .post(`/companies`)
-//       .send({});
-//     expect(response.statusCode).toEqual(400);
-//   })
+  test("POST /jobs invalid equity", async function() {
+    const response = await request(app)
+      .post(`/jobs`)
+      .send({
+        title: 1234,
+        salary: 200000,
+        equity: 1.1,
+        company_handle: 'springboard'
+      });
+    expect(response.statusCode).toEqual(400);
+  })
+  
+  test("POST /jobs missing inputs", async function() {
+    const response = await request(app)
+      .post(`/jobs`)
+      .send({
+        title: 1234,
+        salary: 200000,
+        equity: 1.1
+      });
+    expect(response.statusCode).toEqual(400);
+  })
 
-//   test("PATCH /companies/:handle some properties", async function() {
-//     const response = await request(app)
-//       .patch(`/companies/${handle}`)
-//       .send({
-//         name: 'UpdatedName',
-//         description: 'updatedDescrip'
-//       })
-//     expect(response.statusCode).toEqual(200);
-//     expect(response.body).toEqual({
-//       company: {
-//         handle: handle,
-//         name: 'UpdatedName',
-//         description: 'updatedDescrip',
-//         num_employees: num_employees,
-//         logo_url: logo_url
-//       }
-//     }) 
-//   })
+  test("PATCH /jobs/:id some properties", async function() {
+    const response = await request(app)
+      .patch(`/jobs/${id}`)
+      .send({
+        title: 'UpdatedTitle',
+        salary: 105000
+      })
+    expect(response.statusCode).toEqual(200);
+    expect(response.body).toEqual({
+      job: {
+        id, id,
+        title: 'UpdatedTitle',
+        salary: 105000,
+        equity: equity,
+        company_handle: company_handle,
+        date_posted: expect.any(String)
+      }
+    }) 
+  })
   
-//   test("PATCH /companies/:handle invalid inputs", async function() {
-//     const response = await request(app)
-//       .patch(`/companies/${handle}`)
-//       .send({
-//         name: 1234,
-//         logo_url: 'badurl'
-//       })
-//     expect(response.statusCode).toEqual(400);
-//   })
+  test("PATCH /jobs/:id invalid title", async function() {
+    const response = await request(app)
+      .patch(`/jobs/${id}`)
+      .send({
+        title: 1234
+      })
+    expect(response.statusCode).toEqual(400);
+  })
   
-//   test("PATCH /companies/:handle empty inputs", async function() {
-//     const response = await request(app)
-//       .patch(`/companies/${handle}`)
-//       .send({});
-//     expect(response.statusCode).toEqual(400);
-//   })
+  test("PATCH /jobs/:id invalid salary", async function() {
+    const response = await request(app)
+      .patch(`/jobs/${id}`)
+      .send({
+        salary: 'chedduh'
+      })
+    expect(response.statusCode).toEqual(400);
+  })
 
-//   test("PATCH /companies/:handle duplicate name", async function() {
-//     const newCompany = await Company.create({
-//       name: 'NewCompany',
-//       handle: 'newcomp'
-//     })
-//     const response = await request(app)
-//       .patch(`/companies/${handle}`)
-//       .send({name: newCompany.name});
-//     expect(response.statusCode).toEqual(400);
-//   })
+  test("PATCH /jobs/:id invalid equity", async function() {
+    const response = await request(app)
+      .patch(`/jobs/${id}`)
+      .send({
+        equity: 1.1
+      })
+    expect(response.statusCode).toEqual(400);
+  })
+
+  test("PATCH /jobs/:id not allowed", async function() {
+    const response = await request(app)
+      .patch(`/jobs/${id}`)
+      .send({
+        id: 50
+      })
+    expect(response.statusCode).toEqual(401);
+  })
   
-//   test("DELETE /companies/:handle", async function() {
-//     const response = await request(app)
-//       .delete(`/companies/${handle}`);
-//     expect(response.statusCode).toEqual(200);
-//     expect(response.body).toEqual({
-//       message: `Company ${name} deleted.`
-//     });
-//   })
+  test("PATCH /jobs/:id empty inputs", async function() {
+    const response = await request(app)
+      .patch(`/jobs/${id}`)
+      .send({})
+    expect(response.statusCode).toEqual(400);
+  })
+  
+  test("DELETE /jobs/:id", async function() {
+    const response = await request(app)
+      .delete(`/jobs/${id}`);
+    expect(response.statusCode).toEqual(200);
+    expect(response.body).toEqual({
+      message: `Job ${title} deleted.`
+    });
+  })
+  
+  test("DELETE /jobs/:id not found", async function() {
+    const response = await request(app)
+      .delete(`/jobs/100000000`);
+    expect(response.statusCode).toEqual(404);
+  })
 })
 
 afterAll(async function() {

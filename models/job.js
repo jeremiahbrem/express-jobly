@@ -69,65 +69,45 @@ class Job {
 //    * indexes - array for storing value placeholders for query statement
 //    * values - array of given updated property values
 //   */ 
-//   static async create(parameters) {
-//     // check for duplicate handle
-//     const handleCheck = await db.query(
-//       `SELECT handle FROM companies WHERE handle='${parameters.handle}'`
-//     );
-//     if (handleCheck.rows[0]) {
-//       throw new ExpressError(`Handle ${parameters.handle} already exists.`, 400);
-//     }
-//     // check for duplicate name
-//     const nameCheck = await db.query(
-//       `SELECT name FROM companies WHERE name='${parameters.name}'`
-//     );
-//     if (nameCheck.rows[0]) {
-//       throw new ExpressError(`Name ${parameters.name} already exists.`, 400);
-//     }
+  static async create(parameters) {
+    let index = 0;
+    let query = `INSERT INTO jobs `;
+    let columns = [];
+    let indexes = [];
+    let values = Object.values(parameters);
 
-//     let index = 0;
-//     let query = `INSERT INTO companies `;
-//     let columns = [];
-//     let indexes = [];
-//     let values = Object.values(parameters);
+    for (let key in parameters) {
+      index++;
+      columns.push(`${key}`);
+      indexes.push(`$${index}`);
+    }     
+    query = query + `(${columns.join(",")})` + 
+      ` VALUES (${indexes.join(",")}) RETURNING *`;
 
-//     for (let key in parameters) {
-//       index++;
-//       columns.push(`${key}`);
-//       indexes.push(`$${index}`);
-//     }     
-//     query = query + `(${columns.join(",")})` + 
-//       ` VALUES (${indexes.join(",")}) RETURNING *`;
+    const result = await db.query(query, values);
+    const { id, title, salary, equity, company_handle, date_posted } = result.rows[0];
+    return new Job(id, title, salary, equity, company_handle, date_posted);
+  }
 
-//     const result = await db.query(query, values);
-//     const { handle, name, description, num_employees, logo_url } = result.rows[0];
-//     return new Company(handle, name, description, num_employees, logo_url);
-//   }
+  // Updates job instance with given properties and returns updated job
+  async update(parameters) {
+    // check for duplicate name
+    
+    const { query, values } = sqlForPartialUpdate('jobs', parameters, 'id', this.id);
+    const result = await db.query(query, values);  
+    return result.rows[0];
+  }
 
-//   // Updates company instance with given properties and returns updated company
-//   async update(parameters) {
-//     // check for duplicate name
-//     const nameCheck = await db.query(
-//       `SELECT name FROM companies WHERE name='${parameters.name}'
-//        AND handle != '${this.handle}'`
-//     );
-//     if (nameCheck.rows[0]) {
-//       throw new ExpressError(`Name ${parameters.name} already exists.`, 400);
-//     }
-//     const { query, values } = sqlForPartialUpdate('companies', parameters, 'handle', this.handle);
-//     const result = await db.query(query, values);  
-//     return result.rows[0];
-//   }
-
-//   // Deletes company from database
-//   async delete() {
-//     const response = await db.query(
-//       `DELETE FROM companies WHERE handle='${this.handle}'
-//        RETURNING name`
-//     );
-//     const message = `Company ${response.rows[0].name} deleted.`
-//     return message;
-//   }
+  // Deletes company from database
+  async delete() {
+    const response = await db.query(
+      `DELETE FROM jobs WHERE id=$1
+       RETURNING title`,
+       [this.id]
+    );
+    const message = `Job ${response.rows[0].title} deleted.`
+    return message;
+  }
 }
 
 module.exports = Job;

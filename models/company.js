@@ -68,6 +68,7 @@ class Company {
   }
 
   /* Creates new company with given properties and returns Company object
+     Accepts parameter object that may have 2 or more inputs given from route
    * index - incremental value placeholder in query statements
    * query - db.query statement string
    * columns - array for storing columns to be changed in SET statement
@@ -127,11 +128,20 @@ class Company {
   // Deletes company from database
   async delete() {
     const response = await db.query(
-      `DELETE FROM companies WHERE handle='${this.handle}'
-       RETURNING name`
+      `DELETE FROM companies WHERE handle=$1
+       RETURNING name`,
+       [this.handle]
     );
     const message = `Company ${response.rows[0].name} deleted.`
     return message;
+  }
+
+  // returns job titles associated with the company object
+  async getJobs() {
+    const response = await db.query(
+      `SELECT title FROM jobs WHERE company_handle=${this.handle}`
+    )
+    return response.rows;
   }
 }
 

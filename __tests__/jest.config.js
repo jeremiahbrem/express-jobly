@@ -44,4 +44,10 @@ async function createTestJobData() {
   TEST_DATA['job'] = result.rows[0];
 }
 
+async function createTestUserData() {
+  `INSERT INTO user 
+  VALUES ('testuser', 'Tester', 'Testerson', 'tester@example.com', 'http://example.com/image.jpg')
+  RETURNING *`
+}
+
 module.exports = { TEST_DATA, beforeEachCallback };

@@ -4,10 +4,9 @@ const request = require("supertest");
 const app = require("../../app.js");
 const Company = require("../../models/company.js");
 
-const { TEST_DATA, beforeEachCallback } = require("../jest.config.js");
+const { TEST_DATA, beforeEachCallback } = require("../unit/jest.config.js");
 const db = require("../../db");
 
-// test company properties
 let name;
 let handle;
 let num_employees;
@@ -146,9 +145,18 @@ describe("Testing company route functions", () => {
         name: name,
         description: description,
         num_employees: num_employees,
-        logo_url: logo_url
+        logo_url: logo_url,
+        jobs: [{
+          title: TEST_DATA.job.title
+        }]
       }
     });  
+  })
+
+  test("GET /companies/:handle not found", async function() {
+    const response = await request(app)
+      .get('/companies/unknown');
+    expect(response.statusCode).toBe(404);  
   })
   
   test("POST /companies all columns", async function() {
