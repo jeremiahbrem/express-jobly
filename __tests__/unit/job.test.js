@@ -131,7 +131,7 @@ describe("Testing Job class functions", () => {
   test("Testing delete job", async function() {
     const testTitle = testJob.title;
     const response = await testJob.delete();
-    expect(response).toEqual(`Job ${testJob.title} deleted.`)
+    expect(response).toEqual(`Job ${testTitle} deleted.`)
   })
 })
 

@@ -17,7 +17,8 @@
         "title",
         "salary",
         "equity",
-        "company_handle"
+        "company_handle",
+        "_token"
     ],
     "properties": {
         "title": {
@@ -60,7 +61,17 @@
             "examples": [
                 "springboard"
             ]
+        },
+        "_token": {
+            "$id": "#/properties/_token",
+            "type": "string",
+            "title": "The _token schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "testtoken"
+            ]
         }
     },
-    "additionalProperties": true
+    "additionalProperties": false
 }

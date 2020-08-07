@@ -2,87 +2,109 @@ const express = require("express");
 const router = new express.Router();
 const db = require("../db");
 const ExpressError = require("../helpers/expressError");
-const Company = require("../models/company.js");
-const Job = require("../models/job.js")
 const jsonschema = require("jsonschema");
-const newJob = require("../schemas/newJob.json");
-const updateJob = require("../schemas/updateJob.json");
+const User = require("../models/user.js")
+const newUser = require("../schemas/newUser.json");
+const updateUser = require("../schemas/updateUser.json");
+const { SECRET_KEY } = require("../config.js");
+const jwt = require("jsonwebtoken");
+const { ensureLoggedIn, ensureCorrectUser } = require("../middleware/auth.js")
 
-// returns list of jobs, filtered if arguments added
-router.get("/", async function (req, res, next) {
+// returns list of users
+router.get("/", ensureLoggedIn, async function (req, res, next) {
   try {
-    const response = await Job.getJobs(req.query);
-    return res.json({jobs: response});
+    const response = await User.getUsers(req.query);
+    return res.json({users: response});
   }
   catch (err) {
     return next(err);
   }
 });
 
-// returns single job
-router.get("/:id", async function (req, res, next) {
+// returns single user
+router.get("/:username", ensureLoggedIn, async function (req, res, next) {
   try {
-    const id = req.params.id;
-    const response = await Job.getJob(+id);
-    const company = await Company.getCompany(response.company_handle);
-    return res.json({job: {
-      id: response.id,
-      title: response.title,
-      salary: response.salary,
-      equity: response.equity,
-      date_posted: response.date_posted,
-      company
-    }});
+    const username = req.params.username;
+    const user = await User.getUser(username);
+    const jobs = await user.getJobs();
+    return res.json({
+      user: {
+        username: user.username,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        photo_url: user.photo_url,
+        is_admin: user.is_admin,
+        jobs
+      }
+    });
   } catch(err) {
     return next(err);
   }
 })
 
-// creates and returns new job
+// // creates and returns token with body {username, is_admin}
 router.post("/", async function (req, res, next) {
   try {
-    if (req.body.id) {
-      throw new ExpressError("Do not enter ID, it is automatically set", 401);
-    }
-    const result = jsonschema.validate(req.body, newJob);
+    const result = jsonschema.validate(req.body, newUser);
 
     if (!result.valid) {
       let listOfErrors = result.errors.map(error => error.stack);
       let error = new ExpressError(listOfErrors, 400);
       return next(error);
     }  
-    const job = await Job.create(req.body);
-    return res.status(201).json({job});
+    const user = await User.create(req.body);
+    let token = jwt.sign(
+      { 
+        username: user.username, 
+        is_admin: user.is_admin
+      }, 
+      SECRET_KEY
+    );
+    return res.status(201).json({ token });
   } catch(err) {
     return next(err);
   }
 })
 
-// // updates company and returns updated company
-router.patch("/:id", async function (req, res, next) {
+// // updates user and returns updated user
+router.patch("/:username", ensureCorrectUser, async function (req, res, next) {
   try {
-    if (req.body.id) {
-      throw new ExpressError("Updating id not allowed", 401);
+    if (req.body.is_admin) {
+      throw new ExpressError("Updating is_admin not allowed", 401);
     }
-    const result = jsonschema.validate(req.body, updateJob);
+    if (req.body.username) {
+      throw new ExpressError("Updating username not allowed", 401);
+    }
+    const result = jsonschema.validate(req.body, updateUser);
 
     if (!result.valid) {
       let listOfErrors = result.errors.map(error => error.stack);
       let error = new ExpressError(listOfErrors, 400);
       return next(error);
     }
-    const getJob = await Job.getJob(req.params.id);
-    const job = await getJob.update(req.body);
-    return res.json({job});
+    const getUser = await User.getUser(req.params.username);
+    delete req.body._token;
+    const user = await getUser.update(req.body);
+    return res.json({
+      user: {
+        username: user.username,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        photo_url: user.photo_url,
+        is_admin: user.is_admin
+      }
+    });
   } catch(err) {
     return next(err);
   }
 })
 
-router.delete("/:id", async function (req, res, next) {
+router.delete("/:username", ensureCorrectUser, async function (req, res, next) {
   try {
-    const job = await Job.getJob(req.params.id);
-    const message = await job.delete();
+    const user = await User.getUser(req.params.username);
+    const message = await user.delete();
     return res.json({message});
   } catch(err) {
     return next(err);

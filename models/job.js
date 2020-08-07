@@ -108,6 +108,26 @@ class Job {
     const message = `Job ${response.rows[0].title} deleted.`
     return message;
   }
+
+  async apply(username) {
+    const response = await db.query(
+      `INSERT INTO applications (username, job_id)
+      VALUES ($1, $2)
+      RETURNING *`,
+      [username, this.id]
+    );
+    return response.rows[0];
+  }
+
+  static async updateApp(id, state) {
+    const response = await db.query(
+      `UPDATE applications SET state=$1
+      WHERE id=$2
+      RETURNING *`,
+      [state, id]
+    );
+    return response.rows[0];
+  }
 }
 
 module.exports = Job;

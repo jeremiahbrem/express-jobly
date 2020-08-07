@@ -1,138 +1,148 @@
 process.env.NODE_ENV === "test";
 
 const app = require("../../app");
-const Job = require("../../models/job.js");
+const User = require("../../models/user.js");
 
 const { TEST_DATA, beforeEachCallback } = require("../jest.config");
 const db = require("../../db");
 
-// test job properties
-let id;
-let title;
-let salary;
-let equity;
-let company_handle;
-let date_posted;
+// test user properties
+let username;
+let password;
+let first_name;
+let last_name;
+let email;
+let photo_url;
+let is_admin;
 
-// test job object
-let testJob;
+// test user object
+let testUser;
 
 beforeEach(async function() {
   await beforeEachCallback();
-  id = TEST_DATA.job.id;
-  title = TEST_DATA.job.title;
-  salary = TEST_DATA.job.salary;
-  equity = TEST_DATA.job.equity;
-  company_handle = TEST_DATA.job.company_handle;
-  date_posted = TEST_DATA.job.date_posted;
-  testJob = new Job(id, title, salary, equity, date_posted);
+  username = TEST_DATA.user.username;
+  password = TEST_DATA.user.password;
+  first_name = TEST_DATA.user.first_name;
+  last_name = TEST_DATA.user.last_name;
+  email = TEST_DATA.user.email;
+  photo_url = TEST_DATA.user.photo_url;
+  is_admin = TEST_DATA.user.is_admin;
+  testUser = new User(username, password, first_name, last_name, email, photo_url, is_admin);
 })
 
-describe("Testing Job class functions", () => {
-  test("Testing getJobs all", async function() {
-    const result = await Job.getJobs({});
-    expect(result).toEqual([{title, company_handle}]);
-  })
-  
-  test("Testing getJobs search", async function() {
-    const result = await Job.getJobs({search: title});
-    expect(result).toEqual([{title, company_handle}]);
-  })  
-
-  test("Testing getJobs search not found", async function() {
-    const result = await Job.getJobs({search: "unknown"});
-    expect(result).toEqual([]);
+describe("Testing User class functions", () => {
+  test("Testing getUsers", async function() {
+    const result = await User.getUsers();
+    expect(result).toEqual([{
+        username,
+        first_name,
+        last_name,
+        email
+    }]);
   })
 
-  test("Testing getJobs min_salary", async function() {
-    const num = salary - 1;
-    const result = await Job.getJobs({min_salary: num});
-    expect(result).toEqual([{title, company_handle}]);
-  })   
-
-  test("Testing getJobs min_salary not found", async function() { 
-    const num = salary + 1;
-    const result = await Job.getJobs({min_salary: num});
-    expect(result).toEqual([]);    
+  test("Testing getUser", async function() {
+    const result = await User.getUser(username);
+    expect(result).toBeInstanceOf(User);
+    expect(result.username).toEqual(username);
+    expect(result.password).toBeDefined();
+    expect(result.first_name).toEqual(first_name);
+    expect(result.last_name).toEqual(last_name);
+    expect(result.email).toEqual(email);
+    expect(result.photo_url).toEqual(photo_url);
+    expect(result.is_admin).toEqual(is_admin);
   })
   
-  test("Testing getJobs min_equity", async function() {
-    const num = equity - 0.1;
-    const result = await Job.getJobs({min_salary: num});
-    expect(result).toEqual([{title, company_handle}]);
-  })
-  
-  test("Testing getJobs min_equity not found", async function() {
-    const num = equity + 0.1;
-    const result = await Job.getJobs({min_equity: num});
-    expect(result).toEqual([]);
-  })
-  
-  test("Testing getJobs with search, min_salary, & min_equity", async function() {
-    const minSalary = salary - 1;
-    const minEquity = equity - 0.1;
-    const result = await Job.getJobs({
-        search: title,
-        min_salary: minSalary,
-        min_equity: minEquity
-    });
-    expect(result).toEqual([{title, company_handle}]);
-  })
-
-  test("Testing getJob", async function() {
-    const result = await Job.getJob(id);
-    expect(result).toBeInstanceOf(Job);
-    expect(result.id).toEqual(id);
-    expect(result.title).toEqual(title);
-    expect(result.salary).toEqual(salary);
-    expect(result.equity).toEqual(equity);
-    expect(result.company_handle).toEqual(company_handle);
-    expect(result.date_posted).toEqual(date_posted);
-  })
-  
-  test("Testing getJob not found", async function() {
+  test("Testing getUser not found", async function() {
     try {
-      const result = await Job.getJob(1000000);
+      const result = await User.getUser('unknown');
     } catch(err) {
-      expect(err.message).toEqual(`Job with id 1000000 not found`);
+      expect(err.message).toEqual(`Username unknown not found`);
     }
   })
 
   test("Testing create", async function() {
-    const response = await Job.create({
-      title: 'Test Job',
-      salary: 200000.00,
-      equity: 0.05,
-      company_handle: 'springboard'
-    })
-    expect(response).toBeInstanceOf(Job);
-    expect(response.id).toBeDefined();
-    expect(response.title).toEqual('Test Job');
-    expect(response.salary).toEqual(200000);
-    expect(response.equity).toEqual(0.05);
-    expect(response.company_handle).toEqual('springboard');
-    expect(response.date_posted).toBeDefined();
+    const response = await User.create({
+      username: 'user2',
+      password: 'password2',
+      first_name: 'Tester2',
+      last_name: 'Testerhauser',
+      email: 'test2@example.com',
+      photo_url: 'http://example.com/test2.jpg'
+    });    
+    console.log(response)
+    expect(response).toBeInstanceOf(User);
+    expect(response.username).toEqual('user2');
+    expect(response.password).toBeDefined();
+    expect(response.first_name).toEqual('Tester2');
+    expect(response.last_name).toEqual('Testerhauser');
+    expect(response.email).toEqual('test2@example.com');
+    expect(response.photo_url).toEqual('http://example.com/test2.jpg');
+    expect(response.is_admin).toBeFalsy();
+  })
+
+  test("Testing create duplicate username", async function() {
+    try {
+      const response = await User.create({
+        username: username,
+        password: 'password2',
+        first_name: 'Tester2',
+        last_name: 'Testerhauser',
+        email: 'test2@example.com',
+        photo_url: 'http://example.com/test2.jpg'
+      })
+    } catch(err) {
+      expect(err.message).toEqual(`Username ${username} already exists.`)
+    }
+  })
+  
+  test("Testing create duplicate email", async function() {
+    try {
+      const response = await User.create({
+        username: 'user2',
+        password: 'password2',
+        first_name: 'Tester2',
+        last_name: 'Testerhauser',
+        email: email,
+        photo_url: 'http://example.com/test2.jpg'
+      })
+    } catch(err) {
+      expect(err.message).toEqual(`Email ${email} already exists.`)
+    }
   })
   
   test("Testing update some properties", async function() {
-    const title = 'updatedTitle';
-    const salary = 105000;
-    const result = await testJob.update({title, salary});
+    const password = 'updatedpassword';
+    const email = 'updated@example.com';
+    const photo_url = 'http://example.com/new.jpg';
+    const result = await testUser.update({password, email, photo_url});
     expect(result).toEqual({
-      id: id,
-      title: 'updatedTitle',
-      salary: 105000,
-      equity: equity,
-      company_handle: company_handle,
-      date_posted: date_posted
+      username: testUser.username,
+      password: expect.any(String),
+      first_name: testUser.first_name,
+      last_name: testUser.last_name,
+      email: 'updated@example.com',
+      photo_url: 'http://example.com/new.jpg',
+      is_admin: false
     })
   })
-
-  test("Testing delete job", async function() {
-    const testTitle = testJob.title;
-    const response = await testJob.delete();
-    expect(response).toEqual(`Job ${testJob.title} deleted.`)
+  
+  test("Testing delete user", async function() {
+    const testUsername = testUser.username;
+    const response = await testUser.delete();
+    expect(response).toEqual(`User ${testUsername} deleted.`)
   })
+
+  test("Testing authenticate user", async function () {
+    let response = await User.authenticate(username, password);
+    expect(response).toEqual({
+      username: username,
+      is_admin: false
+    })
+
+    let notUser = await User.authenticate(username, "wrongpassword");
+    expect(notUser).toBeFalsy();
+  });
 })
 
 afterAll(async function() {

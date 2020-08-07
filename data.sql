@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS applications;
 DROP TABLE IF EXISTS jobs;
 DROP TABLE IF EXISTS companies;
 DROP TABLE IF EXISTS users;
@@ -29,3 +30,13 @@ CREATE TABLE users (
   photo_url TEXT,
   is_admin BOOLEAN NOT NULL DEFAULT false
 );
+
+CREATE TABLE applications (
+  id SERIAL PRIMARY KEY,
+  username TEXT,
+  job_id INTEGER,
+  state TEXT DEFAULT 'applied',
+  created_at TIMESTAMP DEFAULT current_timestamp,
+  FOREIGN KEY(username) REFERENCES users ON DELETE CASCADE,
+  FOREIGN KEY(job_id) REFERENCES jobs ON DELETE CASCADE
+)

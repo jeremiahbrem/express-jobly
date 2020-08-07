@@ -6,9 +6,10 @@ const Company = require("../models/company.js");
 const jsonschema = require("jsonschema");
 const newCompany = require("../schemas/newCompany.json");
 const updateCompany = require("../schemas/updateCompany.json");
+const { ensureLoggedIn, ensureIsAdmin } = require("../middleware/auth.js");
 
 // returns list of companies, filtered if arguments added
-router.get("/", async function (req, res, next) {
+router.get("/", ensureLoggedIn, async function (req, res, next) {
   try {
     const response = await Company.getCompanies(req.query);
     return res.json({companies: response});
@@ -19,10 +20,9 @@ router.get("/", async function (req, res, next) {
 });
 
 // returns single company
-router.get("/:handle", async function (req, res, next) {
+router.get("/:handle", ensureLoggedIn, async function (req, res, next) {
   try {
-    const handle = req.params.handle;
-    const getComp = await Company.getCompany(handle);
+    const getComp = await Company.getCompany(req.params.handle);
     const jobs = await getComp.getJobs();
     return res.json({
       company: { 
@@ -40,7 +40,7 @@ router.get("/:handle", async function (req, res, next) {
 })
 
 // creates and returns new company
-router.post("/", async function (req, res, next) {
+router.post("/", ensureIsAdmin, async function (req, res, next) {
   try {
     const result = jsonschema.validate(req.body, newCompany);
 
@@ -49,7 +49,9 @@ router.post("/", async function (req, res, next) {
       let error = new ExpressError(listOfErrors, 400);
       return next(error);
     }  
+    delete req.body._token;
     const company = await Company.create(req.body);
+    
     return res.status(201).json({company});
   } catch(err) {
     return next(err);
@@ -57,7 +59,7 @@ router.post("/", async function (req, res, next) {
 })
 
 // updates company and returns updated company
-router.patch("/:handle", async function (req, res, next) {
+router.patch("/:handle", ensureIsAdmin, async function (req, res, next) {
   try {
     if (req.body.handle) {
       throw new ExpressError("Updating handle not allowed", 401);
@@ -77,7 +79,7 @@ router.patch("/:handle", async function (req, res, next) {
   }
 })
 
-router.delete("/:handle", async function (req, res, next) {
+router.delete("/:handle", ensureIsAdmin, async function (req, res, next) {
   try {
     const company = await Company.getCompany(req.params.handle);
     const message = await company.delete();

@@ -4,70 +4,83 @@
     "type": "object",
     "title": "The root schema",
     "description": "The root schema comprises the entire JSON document.",
-    "minProperties": 2,
     "default": {},
+    "minProperties": 2,
     "examples": [
         {
-            "handle": "springboard",
-            "name": "Springboard",
-            "description": "Software bootcamp",
-            "num_employees": 200,
-            "logo_url": "https://media-exp1.licdn.com/dms/image/C4E0BAQHf0JHEUIMUXA/company-logo_200_200/0?e=1604534400&v=beta&t=mhAEJsQsM85pLISJJwRXg4tJuBAcJi5H-_W6bsDSDCg"
+            "username": "testuser",
+            "password": "testpassword",
+            "first_name": "Tester",
+            "last_name": "Testerson",
+            "email": "test@example.com",
+            "photo_url": "http://example.com/img.jpg",
+            "_token": "testtoken"
         }
     ],
     "required": [
         "_token"
     ],
     "properties": {
-        "handle": {
-            "$id": "#/properties/handle",
+        "username": {
+            "$id": "#/properties/username",
             "type": "string",
-            "title": "The handle schema",
+            "title": "The username schema",
             "description": "An explanation about the purpose of this instance.",
             "default": "",
             "examples": [
-                "springboard"
+                "testuser"
             ]
         },
-        "name": {
-            "$id": "#/properties/name",
+        "password": {
+            "$id": "#/properties/password",
             "type": "string",
-            "title": "The name schema",
+            "title": "The password schema",
             "description": "An explanation about the purpose of this instance.",
             "default": "",
             "examples": [
-                "Springboard"
+                "testpassword"
             ]
         },
-        "description": {
-            "$id": "#/properties/description",
+        "first_name": {
+            "$id": "#/properties/first_name",
             "type": "string",
-            "title": "The description schema",
+            "title": "The first_name schema",
             "description": "An explanation about the purpose of this instance.",
             "default": "",
             "examples": [
-                "Software bootcamp"
+                "Tester"
             ]
         },
-        "num_employees": {
-            "$id": "#/properties/num_employees",
-            "type": "integer",
-            "title": "The num_employees schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                200
-            ]
-        },
-        "logo_url": {
-            "$id": "#/properties/logo_url",
+        "last_name": {
+            "$id": "#/properties/last_name",
             "type": "string",
+            "title": "The last_name schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "Testerson"
+            ]
+        },
+        "email": {
+            "$id": "#/properties/email",
+            "type": "string",
+            "title": "The email schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "format": "email",
+            "examples": [
+                "test@example.com"
+            ]
+        },
+        "photo_url": {
+            "$id": "#/properties/photo_url",
+            "type": "string",
+            "title": "The photo_url schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
             "format": "uri",
-            "title": "The logo_url schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
             "examples": [
-                "https://media-exp1.licdn.com/dms/image/C4E0BAQHf0JHEUIMUXA/company-logo_200_200/0?e=1604534400&v=beta&t=mhAEJsQsM85pLISJJwRXg4tJuBAcJi5H-_W6bsDSDCg"
+                "http://example.com/img.jpg"
             ]
         },
         "_token": {

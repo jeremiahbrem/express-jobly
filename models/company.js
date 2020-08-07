@@ -60,6 +60,7 @@ class Company {
       `SELECT handle, name, description, num_employees, logo_url
         FROM companies WHERE handle='${handleInput}'`
     );
+  
     if (!result.rows[0]) {
       throw new ExpressError(`Company with handle ${handleInput} not found`, 404);
     }
@@ -139,7 +140,7 @@ class Company {
   // returns job titles associated with the company object
   async getJobs() {
     const response = await db.query(
-      `SELECT title FROM jobs WHERE company_handle=${this.handle}`
+      `SELECT title FROM jobs WHERE company_handle='${this.handle}'`
     )
     return response.rows;
   }

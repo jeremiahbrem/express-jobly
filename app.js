@@ -7,11 +7,28 @@ const ExpressError = require("./helpers/expressError");
 const morgan = require("morgan");
 
 const app = express();
-const companyRoutes = require("./api/companyRoutes.js")
-const jobRoutes = require("./api/jobRoutes.js")
+const cors = require("cors");
+const companyRoutes = require("./api/companyRoutes.js");
+const jobRoutes = require("./api/jobRoutes.js");
+const userRoutes = require("./api/userRoutes.js");
+const authRoutes = require("./api/authRoutes.js");
+const { authenticateJWT } = require("./middleware/auth.js");
+
+// allow both form-encoded and json body parsing
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+
+// allow connections to all routes from any browser
+app.use(cors());
+
+// get auth token for all routes
+app.use(authenticateJWT);
+
 app.use(express.json());
 app.use("/companies", companyRoutes);
 app.use("/jobs", jobRoutes);
+app.use("/users", userRoutes);
+app.use("/", authRoutes);
 
 // add logging system
 app.use(morgan("tiny"));

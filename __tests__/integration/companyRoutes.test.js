@@ -4,7 +4,7 @@ const request = require("supertest");
 const app = require("../../app.js");
 const Company = require("../../models/company.js");
 
-const { TEST_DATA, beforeEachCallback } = require("../unit/jest.config.js");
+const { TEST_DATA, beforeEachCallback } = require("../jest.config.js");
 const db = require("../../db");
 
 let name;
@@ -25,7 +25,8 @@ beforeEach(async function() {
 describe("Testing company route functions", () => {
   test("GET /companies return ALL", async function() {
     const response = await request(app)
-      .get("/companies");
+      .get("/companies")
+      .send({_token: TEST_DATA.testToken});
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({
       companies: [
@@ -36,7 +37,8 @@ describe("Testing company route functions", () => {
   
   test("GET /companies with search", async function() {
     const response = await request(app)
-      .get(`/companies?search=${name}`);
+      .get(`/companies?search=${name}`)
+      .send({_token: TEST_DATA.testToken});
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({
       companies: [
@@ -47,7 +49,8 @@ describe("Testing company route functions", () => {
   
   test("GET /companies with search not found", async function() {
     const response = await request(app)
-      .get("/companies?search=unknown");
+      .get("/companies?search=unknown")
+      .send({_token: TEST_DATA.testToken});
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({
       companies: []
@@ -57,7 +60,8 @@ describe("Testing company route functions", () => {
   test("GET /companies with min num_employees", async function() {
     const min = num_employees - 1;
     const response = await request(app)
-      .get(`/companies?min_employees=${min}`);
+      .get(`/companies?min_employees=${min}`)
+      .send({_token: TEST_DATA.testToken});
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({
       companies: [
@@ -69,7 +73,8 @@ describe("Testing company route functions", () => {
   test("GET /companies with min num_employees not found", async function() {
     const min = num_employees + 1;
     const response = await request(app)
-      .get(`/companies?min_employees=${min}`);
+      .get(`/companies?min_employees=${min}`)
+      .send({_token: TEST_DATA.testToken});
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({
       companies: []
@@ -79,7 +84,8 @@ describe("Testing company route functions", () => {
   test("GET /companies with max num_employees", async function() {
     const max = num_employees + 1;
     const response = await request(app)
-      .get(`/companies?max_employees=${max}`);
+      .get(`/companies?max_employees=${max}`)
+      .send({_token: TEST_DATA.testToken});
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({
       companies: [
@@ -91,7 +97,8 @@ describe("Testing company route functions", () => {
   test("GET /companies with max num_employees not found", async function() {
     const max = num_employees - 1;
     const response = await request(app)
-      .get(`/companies?max_employees=${max}`);
+      .get(`/companies?max_employees=${max}`)
+      .send({_token: TEST_DATA.testToken});
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({
       companies: []
@@ -102,7 +109,8 @@ describe("Testing company route functions", () => {
     const max = num_employees + 1;
     const min = num_employees - 1;
     const response = await request(app)
-      .get(`/companies?min_employees=${min}&max_employees=${max}`);
+      .get(`/companies?min_employees=${min}&max_employees=${max}`)
+      .send({_token: TEST_DATA.testToken});
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({
       companies: [
@@ -115,7 +123,8 @@ describe("Testing company route functions", () => {
     const max = num_employees + 3;
     const min = num_employees + 1;
     const response = await request(app)
-      .get(`/companies?min_employees=${min}&max_employees=${max}`);
+      .get(`/companies?min_employees=${min}&max_employees=${max}`)
+      .send({_token: TEST_DATA.testToken});
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({
       companies: []
@@ -126,7 +135,8 @@ describe("Testing company route functions", () => {
     const max = num_employees + 2;
     const min = num_employees;
     const response = await request(app)
-      .get(`/companies?search=${name}&min_employees=${min}&max_employees=${max}`);
+      .get(`/companies?search=${name}&min_employees=${min}&max_employees=${max}`)
+      .send({_token: TEST_DATA.testToken});
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({
       companies: [
@@ -134,10 +144,17 @@ describe("Testing company route functions", () => {
       ]
     });  
   })
+
+  test("GET /companies unauthorized", async function() {
+    const response = await request(app)
+      .get('/companies');
+    expect(response.statusCode).toBe(401);  
+  })
   
   test("GET /companies/:handle ", async function() {
     const response = await request(app)
-      .get(`/companies/${handle}`);
+      .get(`/companies/${handle}`)
+      .send({_token: TEST_DATA.testToken});
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({
       company: {
@@ -155,14 +172,22 @@ describe("Testing company route functions", () => {
 
   test("GET /companies/:handle not found", async function() {
     const response = await request(app)
-      .get('/companies/unknown');
+      .get('/companies/unknown')
+      .send({_token: TEST_DATA.testToken});
     expect(response.statusCode).toBe(404);  
+  })
+  
+  test("GET /companies/:handle unauthorized", async function() {
+    const response = await request(app)
+      .get('/companies/unknown');
+    expect(response.statusCode).toBe(401);  
   })
   
   test("POST /companies all columns", async function() {
     const response = await request(app)
       .post(`/companies`)
       .send({
+        _token: TEST_DATA.adminToken,
         handle: 'test',
         name: 'Test',
         description: 'Test company',
@@ -185,6 +210,7 @@ describe("Testing company route functions", () => {
     const response = await request(app)
       .post(`/companies`)
       .send({
+        _token: TEST_DATA.adminToken,
         handle: 'test',
         name: 'Test',
       });
@@ -204,6 +230,7 @@ describe("Testing company route functions", () => {
     const response = await request(app)
       .post(`/companies`)
       .send({
+        _token: TEST_DATA.adminToken,
         handle: 1234,
         name: 'Test',
         logo_url: 'badurl'
@@ -214,14 +241,26 @@ describe("Testing company route functions", () => {
   test("POST /companies empty inputs", async function() {
     const response = await request(app)
       .post(`/companies`)
-      .send({});
+      .send({
+        _token: TEST_DATA.adminToken
+      });
     expect(response.statusCode).toEqual(400);
+  })
+  
+  test("POST /companies unauthorized", async function() {
+    const response = await request(app)
+      .post(`/companies`)
+      .send({
+        _token: TEST_DATA.testToken
+      });
+    expect(response.statusCode).toEqual(401);
   })
 
   test("PATCH /companies/:handle some properties", async function() {
     const response = await request(app)
       .patch(`/companies/${handle}`)
       .send({
+        _token: TEST_DATA.adminToken,
         name: 'UpdatedName',
         description: 'updatedDescrip'
       })
@@ -241,6 +280,7 @@ describe("Testing company route functions", () => {
     const response = await request(app)
       .patch(`/companies/${handle}`)
       .send({
+        _token: TEST_DATA.adminToken,
         name: 1234,
         logo_url: 'badurl'
       })
@@ -250,7 +290,9 @@ describe("Testing company route functions", () => {
   test("PATCH /companies/:handle empty inputs", async function() {
     const response = await request(app)
       .patch(`/companies/${handle}`)
-      .send({});
+      .send({
+        _token: TEST_DATA.adminToken
+      });
     expect(response.statusCode).toEqual(400);
   })
 
@@ -261,17 +303,41 @@ describe("Testing company route functions", () => {
     })
     const response = await request(app)
       .patch(`/companies/${handle}`)
-      .send({name: newCompany.name});
+      .send({
+        _token: TEST_DATA.adminToken,
+        name: newCompany.name
+      });
     expect(response.statusCode).toEqual(400);
+  })
+
+  test("PATCH /companies unauthorized", async function() {
+    const response = await request(app)
+      .patch(`/companies/${handle}`)
+      .send({
+        _token: TEST_DATA.testToken
+      });
+    expect(response.statusCode).toEqual(401);
   })
   
   test("DELETE /companies/:handle", async function() {
     const response = await request(app)
-      .delete(`/companies/${handle}`);
+      .delete(`/companies/${handle}`)
+      .send({
+        _token: TEST_DATA.adminToken
+      });
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({
       message: `Company ${name} deleted.`
     });
+  })
+
+  test("DELETE /companies unauthorized", async function() {
+    const response = await request(app)
+      .delete(`/companies/${handle}`)
+      .send({
+        _token: TEST_DATA.testToken
+      });
+    expect(response.statusCode).toEqual(401);
   })
 })
 

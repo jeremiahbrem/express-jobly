@@ -16,7 +16,8 @@
     ],
     "required": [
         "handle",
-        "name"
+        "name",
+        "_token"
     ],
     "properties": {
         "handle": {
@@ -68,6 +69,16 @@
             "default": "",
             "examples": [
                 "https://media-exp1.licdn.com/dms/image/C4E0BAQHf0JHEUIMUXA/company-logo_200_200/0?e=1604534400&v=beta&t=mhAEJsQsM85pLISJJwRXg4tJuBAcJi5H-_W6bsDSDCg"
+            ]
+        },
+        "_token": {
+            "$id": "#/properties/_token",
+            "type": "string",
+            "title": "The _token schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "testtoken"
             ]
         }
     },
